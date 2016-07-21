@@ -1,0 +1,11 @@
+#!/bin/bash 
+
+remove_host=${1-!$}
+known_hosts=${2:-~/.ssh/known_hosts}
+match_host='[a-zA-Z0-9\.-_]+@([a-zA-Z0-9\.\-_-]+)'
+
+if [[ "$remove_host" =~ $match_host ]]; then
+    remove_host=${BASH_REMATCH[1]}
+    echo "Removing host $remove_host"
+fi
+sed  -i '' "/$remove_host/d" $known_hosts

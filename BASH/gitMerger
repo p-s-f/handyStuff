@@ -1,0 +1,55 @@
+#!/bin/bash
+
+function pause() {
+  local dummy msg
+  msg=${1:-Press any key to continue...}
+  read -s -r -p "$msg" -n 1 dummy
+}
+
+function yesNo() {
+  msg=${1:-Are you sure?}
+  while(true) ; do
+    read -p "$msg" -n 1 -r
+    echo   
+    if [[ $REPLY =~ ^[Yy]+ ]];  then
+      return 0
+    elif [[ $REPLY =~ ^[Nn]+ ]]; then
+      return 1
+    fi
+    echo "Please enter Y or N"
+  done
+}
+
+on_branch=$(git status| awk 'NR==1'| awk '{print $3}')
+
+if [[ -z "$1" ]]; then
+    read -p "Branch to merge from (i.e $on_branch): " merge_from
+    read -p "Branch to merge to [develop]: " merge_to 
+fi
+
+merge_from=${1:-$merge_from}
+merge_from=${merge_from:-$on_branch}
+merge_to=${2:-$merge_to}
+merge_to=${merge_to:-develop}
+
+echo "will merge $merge_from -> $merge_to ??"
+pause "Press ENTER to do it or CTRL-C to not..."
+
+echo "moving to $merge_to..."
+git checkout $merge_to
+echo "GIT FETCH"
+git fetch
+echo "GIT PULL"
+git pull
+echo "now the merge"
+git merge $merge_from --no-ff --no-commit
+git status
+git diff $merge_to 
+if ! yesNo "Does this look ok? Ready to commit? [Y|N] :"; then
+    git reset --hard HEAD~1
+    echo "Undone commit you can re-add and commit files you want"
+    exit 1
+fi
+
+git commit -p
+git push origin $merge_to

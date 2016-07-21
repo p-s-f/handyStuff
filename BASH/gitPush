@@ -1,0 +1,4 @@
+#!/bin/bash
+
+localrepo=$(git status| awk 'NR==1'| awk '{print $3}')
+git push ${1} origin $localrepo

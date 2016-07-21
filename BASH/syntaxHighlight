@@ -1,0 +1,4 @@
+
+highlight_theme=${2:-molokai}    
+highlight -O rtf $1 --font-size 32 --font 'Source Code Pro' --style $highlight_theme  | pbcopy
+
